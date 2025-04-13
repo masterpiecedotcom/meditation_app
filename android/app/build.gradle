@@ -1,0 +1,39 @@
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android" // use full ID for Kotlin
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace = "com.fustermedia.relaxapp"
+    compileSdk = 35 // Recommended: match the SDK installed in Android Studio
+
+    ndkVersion = flutter.ndkVersion
+
+    defaultConfig {
+        applicationId = "com.fustermedia.relaxapp"
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
