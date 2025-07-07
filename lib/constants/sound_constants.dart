@@ -9,9 +9,9 @@ class SoundSets {
   static const SoundSet defaultTones = SoundSet(
     name: 'Default Tones', // Display name
     // Assumes sounds are directly in assets/audio/
-    inhaleSoundPath: 'audio/inhale_tone.mp3',     // Replace with your file
-    holdSoundPath: 'audio/hold_tone.mp3',         // Replace with your file
-    exhaleSoundPath: 'audio/exhale_tone.mp3',     // Replace with your file
+    inhaleSoundPath: 'audio/inhale.mp3',     // Replace with your file
+    holdSoundPath: 'audio/hold.mp3',         // Replace with your file
+    exhaleSoundPath: 'audio/exhale.mp3',     // Replace with your file
     completeSoundPath: 'audio/complete_tone.mp3', // Replace with your file
   );
 
@@ -26,7 +26,7 @@ class SoundSets {
   );
 
   static const SoundSet calmBells = SoundSet(
-    name: 'Calm Bells',
+    name: 'Nature sound 2',
     // Assumes sounds are in assets/audio/bells/
     // Make sure this subfolder exists and contains these files if using this set
     inhaleSoundPath: 'audio/bells/inhale_bell_low.mp3',   // Example path

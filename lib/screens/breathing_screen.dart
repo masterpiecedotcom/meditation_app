@@ -41,6 +41,9 @@ class _BreathingScreenState extends State<BreathingScreen> {
         ? Colors.white70
         : Colors.black54;
 
+    // Determine if the restart button should be visible
+    final bool showRestartButton = breathingProvider.isRunning || breathingProvider.currentPhase != BreathingPhase.idle;
+
 
     return Scaffold(
       // Use AnimatedContainer for smooth background transitions
@@ -65,7 +68,7 @@ class _BreathingScreenState extends State<BreathingScreen> {
                       shadows: currentTheme.brightness == Brightness.dark ? [ // Only add shadow on dark themes?
                         Shadow(
                             blurRadius: 4.0,
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withAlpha((255 * 0.7).round()), // Opacity usage in Shadow is okay
                             offset: const Offset(0, 2))
                       ] : null,
                     ),
@@ -100,44 +103,101 @@ class _BreathingScreenState extends State<BreathingScreen> {
                   _buildPhaseIndicators(context, breathingProvider, currentTheme),
                   const SizedBox(height: 40),
 
-                  // Start/Pause Button
-                  ElevatedButton(
-                    onPressed: breathingProvider.toggleStartPause,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: currentTheme.buttonBackgroundColor ?? Theme.of(context).colorScheme.primary, // Fallback to theme primary
-                      foregroundColor: currentTheme.buttonTextColor ?? Theme.of(context).colorScheme.onPrimary, // Fallback to theme onPrimary
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 32, vertical: 14), // Slightly larger padding
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                  // --- Start/Pause and Restart Buttons ---
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Start/Pause Button
+                      ElevatedButton(
+                        onPressed: breathingProvider.toggleStartPause,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: currentTheme.buttonBackgroundColor ?? Theme.of(context).colorScheme.primary, // Fallback to theme primary
+                          foregroundColor: currentTheme.buttonTextColor ?? Theme.of(context).colorScheme.onPrimary, // Fallback to theme onPrimary
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 32, vertical: 14), // Slightly larger padding
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          elevation: 4, // Slightly less elevation
+                          shadowColor: Colors.black.withAlpha((255 * 0.7).round()), // Opacity usage in Shadow is okay
+                        ).copyWith(
+                          overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                                (Set<WidgetState> states) {
+                              if (states.contains(WidgetState.hovered) || states.contains(WidgetState.pressed)) {
+                                // Use HSLColor to darken/lighten based on brightness
+                                final baseColor = currentTheme.buttonBackgroundColor ?? Theme.of(context).colorScheme.primary;
+                                final hslColor = HSLColor.fromColor(baseColor);
+                                final adjustedColor = hslColor.withLightness((hslColor.lightness * 0.9).clamp(0.0, 1.0)).toColor();
+                                return adjustedColor;
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        child: Text(
+                          breathingProvider.startButtonText,
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge
+                              ?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16, // Slightly larger font
+                              color: currentTheme.buttonTextColor ?? Theme.of(context).colorScheme.onPrimary),
+                        ),
                       ),
-                      elevation: 4, // Slightly less elevation
-                      shadowColor: Colors.black.withOpacity(0.4),
-                    ).copyWith(
-                      overlayColor: MaterialStateProperty.resolveWith<Color?>(
-                            (Set<MaterialState> states) {
-                          if (states.contains(MaterialState.hovered) || states.contains(MaterialState.pressed)) {
-                            // Use HSLColor to darken/lighten based on brightness
-                            final baseColor = currentTheme.buttonBackgroundColor ?? Theme.of(context).colorScheme.primary;
-                            final hslColor = HSLColor.fromColor(baseColor);
-                            final adjustedColor = hslColor.withLightness((hslColor.lightness * 0.9).clamp(0.0, 1.0)).toColor();
-                            return adjustedColor;
-                          }
-                          return null;
-                        },
+
+                      // Add spacing if restart button is shown
+                      if (showRestartButton) const SizedBox(width: 16),
+
+                      // Restart Button (conditionally visible)
+                      // Using AnimatedOpacity for smooth appearance/disappearance
+                      AnimatedOpacity(
+                        opacity: showRestartButton ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 300),
+                        // Prevent interaction when invisible
+                        child: IgnorePointer(
+                          ignoring: !showRestartButton,
+                          child: showRestartButton
+                              ? ElevatedButton.icon(
+                            onPressed: breathingProvider.reset, // Call the reset method
+                            icon: const Icon(Icons.refresh, size: 20),
+                            label: const Text('Restart'),
+                            style: ElevatedButton.styleFrom(
+                              // Use .withAlpha for opacity
+                              backgroundColor: (currentTheme.buttonBackgroundColor ?? Theme.of(context).colorScheme.secondary).withAlpha((255 * 0.7).round()), // ~70% opacity
+                              foregroundColor: currentTheme.buttonTextColor ?? Theme.of(context).colorScheme.onSecondary,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 14), // Adjust padding
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              elevation: 2, // Less elevation than main button
+                            ).copyWith(
+                              overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                                    (Set<WidgetState> states) {
+                                  if (states.contains(WidgetState.hovered) || states.contains(WidgetState.pressed)) {
+                                    // Base color for overlay calculation (already includes alpha)
+                                    final baseColor = (currentTheme.buttonBackgroundColor ?? Theme.of(context).colorScheme.secondary).withAlpha((255 * 0.7).round());
+                                    // Adjust lightness for the overlay effect
+                                    final hslColor = HSLColor.fromColor(baseColor);
+                                    final adjustedColor = hslColor.withLightness((hslColor.lightness * 0.9).clamp(0.0, 1.0)).toColor();
+                                    // Ensure the adjusted overlay color retains appropriate alpha, or apply a separate alpha for the overlay effect itself
+                                    // Here, we'll just use the adjusted color, assuming the base alpha is desired.
+                                    // Or, to make overlay slightly more opaque: return adjustedColor.withAlpha((255 * 0.8).round());
+                                    return adjustedColor;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          )
+                              : const SizedBox.shrink(), // Render minimal space if not visible
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      breathingProvider.startButtonText,
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelLarge
-                          ?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16, // Slightly larger font
-                          color: currentTheme.buttonTextColor ?? Theme.of(context).colorScheme.onPrimary),
-                    ),
+                    ],
                   ),
+                  // --- End Buttons Row ---
+
                   const SizedBox(height: 30),
 
                   // Controls Row Widget (Sound Toggle, Cycle Count, Theme/Sound Buttons)
