@@ -63,24 +63,35 @@ class ControlsRow extends StatelessWidget {
     // Use theme colors for icons if desired, or keep fixed colors
     final iconColorActive = Colors.greenAccent[400] ?? Colors.green;
     final iconColorMuted = Colors.redAccent[100] ?? Colors.red;
-    final controlIconColor = textColor.withOpacity(0.8); // Color for theme/sound icons
+    final controlIconColor = textColor.withAlpha(204); // ~80% opacity
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0), // No horizontal padding needed if using spaceEvenly
+      padding: const EdgeInsets.symmetric(horizontal: 0), // No horizontal padding needed if using spaceAround
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Space out buttons evenly
+        mainAxisAlignment: MainAxisAlignment.spaceAround, // Use spaceAround for better spacing with 5 items
         crossAxisAlignment: CrossAxisAlignment.start, // Align tops of columns
         children: [
           // Sound On/Off Toggle
           _buildControlButton(
             context: context,
             icon: breathingProvider.soundEnabled
-                ? FontAwesomeIcons.volumeUp
-                : FontAwesomeIcons.volumeMute,
+                ? FontAwesomeIcons.volumeHigh
+                : FontAwesomeIcons.volumeXmark,
             color: breathingProvider.soundEnabled ? iconColorActive : iconColorMuted,
             label: 'Sound',
             tooltip: breathingProvider.soundEnabled ? 'Mute Sound' : 'Unmute Sound',
             onPressed: breathingProvider.toggleSoundEnabled,
+            textColor: textColor,
+          ),
+
+          // Vibration On/Off Toggle
+          _buildControlButton(
+            context: context,
+            icon: Icons.vibration,
+            color: breathingProvider.vibrationEnabled ? iconColorActive : iconColorMuted,
+            label: 'Vibrate',
+            tooltip: breathingProvider.vibrationEnabled ? 'Disable Vibration' : 'Enable Vibration',
+            onPressed: breathingProvider.toggleVibrationEnabled,
             textColor: textColor,
           ),
 
@@ -129,20 +140,19 @@ class ControlsRow extends StatelessWidget {
     required VoidCallback onPressed,
     required Color textColor,
   }) {
-    final labelStyle = Theme.of(context).textTheme.labelMedium?.copyWith(color: textColor.withOpacity(0.8));
+    final labelStyle = Theme.of(context).textTheme.labelMedium?.copyWith(color: textColor.withAlpha(204)); // ~80% opacity
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          icon: FaIcon(icon), // Use FaIcon for FontAwesome
+          icon: FaIcon(icon), // Use FaIcon for FontAwesome or regular Icon
           color: color,
-          iconSize: 24,
+          iconSize: 22, // Slightly smaller icons
           tooltip: tooltip,
           onPressed: onPressed,
           padding: const EdgeInsets.all(12.0), // Adjust padding as needed
           constraints: const BoxConstraints(), // Remove default constraints if needed
         ),
-        // const SizedBox(height: 0), // Reduce space
         Text(label, style: labelStyle),
       ],
     );
@@ -155,7 +165,7 @@ class ControlsRow extends StatelessWidget {
     required String value,
     required Color textColor,
   }) {
-    final labelStyle = Theme.of(context).textTheme.labelMedium?.copyWith(color: textColor.withOpacity(0.8));
+    final labelStyle = Theme.of(context).textTheme.labelMedium?.copyWith(color: textColor.withAlpha(204)); // ~80% opacity
     final valueStyle = Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: textColor);
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -165,7 +175,6 @@ class ControlsRow extends StatelessWidget {
           padding: const EdgeInsets.only(top: 12.0, bottom: 12.0), // Match IconButton padding roughly
           child: Text(value, style: valueStyle),
         ),
-        // const SizedBox(height: 0),
         Text(label, style: labelStyle),
       ],
     );
