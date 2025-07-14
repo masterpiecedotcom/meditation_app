@@ -35,11 +35,11 @@ class AppTheme {
   // Default logic for the main breathing circle color based on phase
   static Color defaultGetPhaseColor(BreathingPhase phase) {
     switch (phase) {
-      case BreathingPhase.inhale: return Colors.blue.withOpacity(0.4);
-      case BreathingPhase.hold: return Colors.yellow.withOpacity(0.4);
-      case BreathingPhase.exhale: return Colors.green.withOpacity(0.4);
+      case BreathingPhase.inhale: return Colors.blue.withAlpha((0.4 * 255).round());
+      case BreathingPhase.hold: return Colors.yellow.withAlpha((0.4 * 255).round());
+      case BreathingPhase.exhale: return Colors.green.withAlpha((0.4 * 255).round());
       case BreathingPhase.idle:
-      default: return Colors.white.withOpacity(0.15); // Slightly more opaque idle
+      return Colors.white.withAlpha((0.15 * 255).round()); // Slightly more opaque idle
     }
   }
 

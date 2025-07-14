@@ -42,11 +42,11 @@ class PhaseIndicator extends StatelessWidget {
               color: indicatorColor, // Use theme-based background
               shape: BoxShape.circle,
               border: isActive
-                  ? Border.all(color: textColor.withOpacity(0.7), width: 2.0) // Thicker border when active
+                  ? Border.all(color: textColor.withAlpha(189), width: 2.0) // Thicker border when active
                   : Border.all(color: Colors.transparent, width: 2.0), // Keep space for border
               boxShadow: isActive ? [ // Add subtle glow when active
                 BoxShadow(
-                  color: indicatorColor.withOpacity(0.5),
+                  color: indicatorColor.withAlpha(128),
                   blurRadius: 8.0,
                   spreadRadius: 1.0,
                 )

@@ -1,5 +1,3 @@
-/* // Uncomment the entire file to enable AdMob functionality
-
 import 'package:flutter/foundation.dart'; // For kDebugMode
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -8,233 +6,180 @@ import 'dart:io' show Platform; // To check platform
 // Service class to manage Google Mobile Ads (AdMob)
 class AdService {
   // --- Singleton Pattern ---
-  // Ensures only one instance of the AdService exists.
   AdService._privateConstructor();
   static final AdService instance = AdService._privateConstructor();
   // --- End Singleton ---
 
   // --- Ad State ---
-  BannerAd? _bannerAd; // Holds the banner ad object
-  bool _isBannerAdLoaded = false; // Tracks if the banner ad is ready to show
-  InterstitialAd? _interstitialAd; // Holds the interstitial ad object
-  bool _isInterstitialAdLoaded = false; // Tracks if the interstitial ad is ready
-  final int _maxFailedLoadAttempts = 3; // Max load retries for interstitial
-  int _interstitialLoadAttempts = 0; // Current retry count for interstitial
+  BannerAd? _bannerAd;
+  bool _isBannerAdLoaded = false;
+  InterstitialAd? _interstitialAd;
+  bool _isInterstitialAdLoaded = false;
+  final int _maxFailedLoadAttempts = 3;
+  int _interstitialLoadAttempts = 0;
+
+  // --- Listener for UI updates ---
+  VoidCallback? _onBannerAdStatusChanged;
 
   // --- Ad Unit IDs ---
-  // IMPORTANT: Replace with your actual Ad Unit IDs from AdMob.
-  // Using test IDs is crucial during development to avoid policy violations.
-  // Test IDs documentation:
-  // Android: https://developers.google.com/admob/android/test-ads
-  // iOS: https://developers.google.com/admob/ios/test-ads
-
-  // Provides the correct banner ad unit ID based on platform and build mode.
+  // IMPORTANT: Replace with your actual Ad Unit IDs
   String get bannerAdUnitId {
     if (kDebugMode) {
-      // Use Google's provided test IDs during debugging
       return Platform.isAndroid
           ? 'ca-app-pub-3940256099942544/6300978111' // Android Test Banner
           : 'ca-app-pub-3940256099942544/2934735716'; // iOS Test Banner
     } else {
-      // Use your production Ad Unit IDs when building for release
       return Platform.isAndroid
-          ? 'YOUR_ANDROID_BANNER_AD_UNIT_ID' // Replace with your actual ID
-          : 'YOUR_IOS_BANNER_AD_UNIT_ID'; // Replace with your actual ID
+          ? 'ca-app-pub-9761782466232974/7976147571' // Replace with your Android Banner ID
+          : 'YOUR_IOS_BANNER_AD_UNIT_ID'; // Replace with your iOS Banner ID
     }
   }
 
-  // Provides the correct interstitial ad unit ID based on platform and build mode.
   String get interstitialAdUnitId {
      if (kDebugMode) {
-      // Use Google's provided test IDs during debugging
       return Platform.isAndroid
           ? 'ca-app-pub-3940256099942544/1033173712' // Android Test Interstitial
           : 'ca-app-pub-3940256099942544/4411468910'; // iOS Test Interstitial
     } else {
-      // Use your production Ad Unit IDs when building for release
       return Platform.isAndroid
-          ? 'YOUR_ANDROID_INTERSTITIAL_AD_UNIT_ID' // Replace with your actual ID
-          : 'YOUR_IOS_INTERSTITIAL_AD_UNIT_ID'; // Replace with your actual ID
+          ? 'ca-app-pub-9761782466232974/6948090648'
+          : 'YOUR_IOS_INTERSTITIAL_AD_UNIT_ID';
     }
   }
 
   // --- Initialization ---
-  // Initializes the Google Mobile Ads SDK. Call this once at app startup.
-  void initialize() {
-    // Check if already initialized or running on an unsupported platform
-    // (AdMob currently supports Android and iOS).
-    if (MobileAds.instance == null || !(Platform.isAndroid || Platform.isIOS)) {
-        debugPrint("AdMob Service: Not initializing (already done or unsupported platform).");
-        return;
-    }
-    MobileAds.instance.initialize();
-    debugPrint("AdMob Service: SDK Initialized.");
-    // Pre-load ads after initialization for quicker display later.
-    // This is optional; ads can also be loaded just before they are needed.
+  // This is now handled in main.dart by calling MobileAds.instance.initialize() directly.
+  // We can pre-load ads here if desired.
+  void loadAds() {
     loadBannerAd();
     loadInterstitialAd();
   }
 
+  // --- Listener Management ---
+  void setBannerListener(VoidCallback listener) {
+    _onBannerAdStatusChanged = listener;
+  }
+
+  void removeBannerListener() {
+    _onBannerAdStatusChanged = null;
+  }
 
   // --- Banner Ad Logic ---
-  // Loads a banner ad.
   void loadBannerAd() {
-     if (!(Platform.isAndroid || Platform.isIOS)) return; // Check platform support
-     if (_bannerAd != null) return; // Avoid loading if one is already loaded/loading
+     if (_isBannerAdLoaded || _bannerAd != null) {
+       // If an ad is already loaded or is in the process of loading, don't load another.
+       // This prevents the "Ad with id X is not available" error.
+       return;
+     }
+     if (!(Platform.isAndroid || Platform.isIOS)) return;
 
-     debugPrint("AdMob Service: Loading Banner Ad...");
-     _bannerAd = BannerAd(
+    debugPrint("AdMob Service: Loading Banner Ad...");
+    _bannerAd = BannerAd(
       adUnitId: bannerAdUnitId,
       request: const AdRequest(),
-      // Common banner size. Use AdSize.adaptiveBanner for better fit.
       size: AdSize.banner,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
           debugPrint('AdMob Service: Banner Ad loaded successfully.');
           _isBannerAdLoaded = true;
-          // The ad is ready, but display is handled by the UI widget.
+          // Notify the UI to rebuild
+          _onBannerAdStatusChanged?.call();
         },
         onAdFailedToLoad: (ad, err) {
           debugPrint('AdMob Service: Banner Ad failed to load: $err');
+          ad.dispose();
+          _bannerAd = null;
           _isBannerAdLoaded = false;
-          ad.dispose(); // Clean up the failed ad object
-          _bannerAd = null; // Clear the reference
-          // Optionally retry loading after a delay
+           // Notify the UI that the ad failed (e.g., to hide the ad space)
+          _onBannerAdStatusChanged?.call();
         },
-        // Other optional callbacks:
-        // onAdOpened: (Ad ad) => debugPrint('AdMob Service: Banner Ad opened.'),
-        // onAdClosed: (Ad ad) => debugPrint('AdMob Service: Banner Ad closed.'),
-        // onAdImpression: (Ad ad) => debugPrint('AdMob Service: Banner Ad impression.'),
       ),
-    )..load(); // Start loading the ad immediately after creation.
+    )..load();
   }
 
-  // Builds the widget to display the banner ad.
-  // Call this from your Scaffold's bottomNavigationBar or another suitable place.
   Widget? buildBannerWidget() {
     if (_isBannerAdLoaded && _bannerAd != null) {
-      // If the ad is loaded, return the AdWidget placed in a Container.
       return Container(
         alignment: Alignment.center,
-        // Use the actual ad size for the container dimensions.
         width: _bannerAd!.size.width.toDouble(),
         height: _bannerAd!.size.height.toDouble(),
-        child: AdWidget(ad: _bannerAd!), // The widget that displays the ad content.
+        child: AdWidget(ad: _bannerAd!),
       );
-    } else {
-      // If the ad is not loaded, return null or an empty widget.
-      // Returning null means no space will be reserved.
-      // Return SizedBox(height: AdSize.banner.height.toDouble()) to reserve space.
-      return null;
     }
+    // Return null if the ad isn't loaded, so no space is taken.
+    return null;
   }
 
-  // Disposes the current banner ad resources. Call when the ad is no longer needed.
   void disposeBannerAd() {
     _bannerAd?.dispose();
     _bannerAd = null;
     _isBannerAdLoaded = false;
-     debugPrint("AdMob Service: Banner Ad disposed.");
+    // Notify the UI that the ad is gone
+    _onBannerAdStatusChanged?.call();
+    debugPrint("AdMob Service: Banner Ad disposed.");
   }
 
 
   // --- Interstitial Ad Logic ---
-  // Loads an interstitial ad.
   void loadInterstitialAd() {
-     if (!(Platform.isAndroid || Platform.isIOS)) return; // Check platform support
-     if (_interstitialAd != null) return; // Avoid loading if already loaded/loading
+     if (_interstitialAd != null) return; // Don't load if already loaded/loading
+     if (!(Platform.isAndroid || Platform.isIOS)) return;
 
      debugPrint("AdMob Service: Loading Interstitial Ad...");
      InterstitialAd.load(
       adUnitId: interstitialAdUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
-        // Called when the ad is successfully loaded.
         onAdLoaded: (ad) {
           debugPrint('AdMob Service: Interstitial Ad loaded successfully.');
-          _interstitialAd = ad; // Store the loaded ad
+          _interstitialAd = ad;
           _isInterstitialAdLoaded = true;
-          _interstitialLoadAttempts = 0; // Reset retry counter on success
-          _interstitialAd!.setImmersiveMode(true); // Optional: Hide status/nav bars when ad shows
+          _interstitialLoadAttempts = 0;
+          _interstitialAd!.setImmersiveMode(true);
 
-           // Set up callbacks for when the ad is shown/dismissed/fails to show.
-           // This MUST be done after the ad is loaded.
           _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
-            onAdShowedFullScreenContent: (InterstitialAd ad) =>
-                debugPrint('AdMob Service: Interstitial Ad showed full screen.'),
-            // Called when the ad is dismissed by the user.
             onAdDismissedFullScreenContent: (InterstitialAd ad) {
-              debugPrint('AdMob Service: Interstitial Ad dismissed.');
-              ad.dispose(); // Dispose the ad after dismissal
+              ad.dispose();
               _interstitialAd = null;
               _isInterstitialAdLoaded = false;
-              loadInterstitialAd(); // Preload the next interstitial ad.
+              loadInterstitialAd(); // Preload the next one
             },
-            // Called if the ad fails to show (e.g., due to an internal error).
             onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
-              debugPrint('AdMob Service: Interstitial Ad failed to show: $error');
-              ad.dispose(); // Dispose the failed ad
+              ad.dispose();
                _interstitialAd = null;
                _isInterstitialAdLoaded = false;
-              loadInterstitialAd(); // Try loading a new one.
+              loadInterstitialAd(); // Try loading again
             },
-             // Other optional callbacks:
-             // onAdImpression: (InterstitialAd ad) => debugPrint('AdMob Service: Interstitial Ad impression occurred.'),
           );
-
         },
-        // Called if the ad fails to load from the network.
         onAdFailedToLoad: (LoadAdError error) {
           debugPrint('AdMob Service: Interstitial Ad failed to load: $error');
-           _interstitialAd = null; // Ensure reference is cleared on failure
+           _interstitialAd = null;
            _isInterstitialAdLoaded = false;
-          _interstitialLoadAttempts += 1; // Increment retry counter
-          // Retry loading up to a maximum number of attempts.
+          _interstitialLoadAttempts += 1;
           if (_interstitialLoadAttempts <= _maxFailedLoadAttempts) {
-             debugPrint('AdMob Service: Retrying interstitial load (attempt $_interstitialLoadAttempts)');
-             // Optionally add a delay before retrying to avoid spamming requests.
              Future.delayed(const Duration(seconds: 5), () => loadInterstitialAd());
-          } else {
-             debugPrint('AdMob Service: Max interstitial load attempts reached.');
           }
         },
       ),
     );
   }
 
-  // Shows the loaded interstitial ad if it's ready.
-  // Call this at appropriate points in your app (e.g., after completing a task).
   void showInterstitialAd() {
     if (_isInterstitialAdLoaded && _interstitialAd != null) {
-      debugPrint("AdMob Service: Attempting to show Interstitial Ad.");
-      _interstitialAd!.show(); // Show the ad full screen.
-      // Reset flags immediately; callbacks will handle disposal and reloading.
-      // _isInterstitialAdLoaded = false; // Handled by callbacks now
-      // _interstitialAd = null; // Handled by callbacks now
+      _interstitialAd!.show();
     } else {
       debugPrint('AdMob Service: Interstitial Ad not ready yet.');
-      // Optionally try loading again if it's not loaded/ready.
       if (!_isInterstitialAdLoaded) {
           loadInterstitialAd();
       }
     }
   }
 
-   // Disposes the current interstitial ad resources.
-   void disposeInterstitialAd() {
-    _interstitialAd?.dispose();
-    _interstitialAd = null;
-    _isInterstitialAdLoaded = false;
-     debugPrint("AdMob Service: Interstitial Ad disposed.");
-  }
-
-  // --- Dispose All ---
-  // Disposes all ad resources. Call when the app is closing or ads are no longer needed.
   void disposeAllAds() {
      disposeBannerAd();
-     disposeInterstitialAd();
-      debugPrint("AdMob Service: All ads disposed.");
+     _interstitialAd?.dispose();
+     debugPrint("AdMob Service: All ads disposed.");
   }
 }
 
-*/ // End of commented-out AdMob service

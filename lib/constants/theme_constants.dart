@@ -20,13 +20,10 @@ class AppThemes {
         ],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        // Note: Animated gradient background requires a stateful widget
-        // or a custom painter setup for continuous animation.
-        // Using a static gradient here for simplicity in refactoring.
       ),
     ),
     // Specific button colors for this theme
-    buttonBackgroundColor: Colors.white.withOpacity(0.2),
+    buttonBackgroundColor: Colors.white.withAlpha(51), // ~20% opacity
     buttonTextColor: Colors.white,
     // Use default phase color logic
     getPhaseColor: AppTheme.defaultGetPhaseColor,
@@ -45,20 +42,19 @@ class AppThemes {
         end: Alignment.bottomCenter,
       ),
     ),
-    buttonBackgroundColor: Colors.white.withOpacity(0.3),
+    buttonBackgroundColor: Colors.white.withAlpha(77), // ~30% opacity
     buttonTextColor: Colors.white,
     // Custom phase circle colors for this theme
     getPhaseColor: (phase) {
       switch (phase) {
-        case BreathingPhase.inhale: return Colors.cyan.withOpacity(0.5);
-        case BreathingPhase.hold: return Colors.lightBlue.withOpacity(0.5);
-        case BreathingPhase.exhale: return Colors.teal.withOpacity(0.5);
-        case BreathingPhase.idle:
-        default: return Colors.blueGrey.withOpacity(0.3);
+        case BreathingPhase.inhale: return Colors.cyan.withAlpha(128); // ~50% opacity
+        case BreathingPhase.hold: return Colors.lightBlue.withAlpha(128); // ~50% opacity
+        case BreathingPhase.exhale: return Colors.teal.withAlpha(128); // ~50% opacity
+        case BreathingPhase.idle: return Colors.blueGrey.withAlpha(77); // ~30% opacity
       }
     },
     // Use default logic for indicator background and icon colors
-    getPhaseIndicatorColor: AppTheme.defaultGetPhaseIndicatorColor,
+    getPhaseIndicatorColor: (phase) => AppTheme.defaultGetPhaseColor(phase).withAlpha(128), // Use default but more opaque
     getPhaseIconColor: AppTheme.defaultGetPhaseIconColor,
   );
 
@@ -73,20 +69,19 @@ class AppThemes {
         end: Alignment.bottomRight,
       ),
     ),
-    buttonBackgroundColor: Colors.white.withOpacity(0.25),
+    buttonBackgroundColor: Colors.white.withAlpha(64), // ~25% opacity
     buttonTextColor: Colors.white,
     // Custom phase circle colors
     getPhaseColor: (phase) {
       switch (phase) {
-        case BreathingPhase.inhale: return Colors.lightGreen.withOpacity(0.4);
-        case BreathingPhase.hold: return Colors.lime.withOpacity(0.4);
-        case BreathingPhase.exhale: return Colors.teal.withOpacity(0.4);
-        case BreathingPhase.idle:
-        default: return Colors.green.withOpacity(0.2);
+        case BreathingPhase.inhale: return Colors.lightGreen.withAlpha(77); // ~30% opacity
+        case BreathingPhase.hold: return Colors.lime.withAlpha(77); // ~30% opacity
+        case BreathingPhase.exhale: return Colors.teal.withAlpha(77); // ~30% opacity
+        case BreathingPhase.idle: return Colors.green.withAlpha(26); // ~10% opacity
       }
     },
     // Use default logic for indicator background and icon colors
-    getPhaseIndicatorColor: AppTheme.defaultGetPhaseIndicatorColor,
+    getPhaseIndicatorColor: (phase) => AppTheme.defaultGetPhaseColor(phase).withAlpha(102), // ~40% opacity
     getPhaseIconColor: AppTheme.defaultGetPhaseIconColor,
   );
 
@@ -106,8 +101,7 @@ class AppThemes {
         case BreathingPhase.inhale: return Colors.lightBlue.shade100;
         case BreathingPhase.hold: return Colors.yellow.shade100;
         case BreathingPhase.exhale: return Colors.green.shade100;
-        case BreathingPhase.idle:
-        default: return Colors.blueGrey.shade50;
+        case BreathingPhase.idle: return Colors.blueGrey.shade50;
       }
     },
     // Custom indicator background colors
@@ -116,8 +110,7 @@ class AppThemes {
         case BreathingPhase.inhale: return Colors.lightBlue.shade200;
         case BreathingPhase.hold: return Colors.yellow.shade200;
         case BreathingPhase.exhale: return Colors.green.shade200;
-        case BreathingPhase.idle:
-        default: return Colors.blueGrey.shade100;
+        case BreathingPhase.idle: return Colors.blueGrey.shade100;
       }
     },
     // Custom indicator icon colors for light theme

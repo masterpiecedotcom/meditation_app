@@ -35,13 +35,13 @@ class BreathingCircle extends StatelessWidget {
         color: phaseColor,
         boxShadow: theme.brightness == Brightness.dark ? [ // Only show shadow on dark themes?
           BoxShadow(
-            color: Colors.black.withOpacity(0.4), // Darker shadow
+            color: Colors.black.withAlpha(102), // Darker shadow
             blurRadius: 25, // Slightly smaller blur
             spreadRadius: 2, // Slight spread
           )
         ] : [ // Lighter shadow for light themes
           BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
+            color: Colors.grey.withAlpha(125),
             blurRadius: 20,
             spreadRadius: 1,
           )
@@ -59,7 +59,7 @@ class BreathingCircle extends StatelessWidget {
             shadows: theme.brightness == Brightness.dark ? [ // Subtle shadow for text on dark bg
               Shadow(
                   blurRadius: 4.0,
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withAlpha(125),
                   offset: const Offset(0, 2))
             ] : null, // No text shadow on light bg
           ),

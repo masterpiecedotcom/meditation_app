@@ -40,6 +40,7 @@ dependencies:
   audioplayers: ^6.4.0 # Use the latest version
   font_awesome_flutter: ^10.8.0
   vibration: ^3.1.3
+  google_mobile_ads: ^6.0.0
 
 dev_dependencies:
   flutter_test:

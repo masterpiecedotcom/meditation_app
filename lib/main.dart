@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'providers/breathing_provider.dart';
 import 'providers/sound_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/breathing_screen.dart';
-// import 'services/ad_service.dart'; // Uncomment for AdMob
+// Uncomment for AdMob
 
-void main() {
-  // WidgetsFlutterBinding.ensureInitialized(); // Uncomment for AdMob
-  // AdService.instance.initialize(); // Uncomment for AdMob
+void main() async { // Make sure the function is async
+  // These two lines are essential for AdMob
+  WidgetsFlutterBinding.ensureInitialized();
+  await MobileAds.instance.initialize(); // Uncomment for AdMob
 
   runApp(
     MultiProvider(

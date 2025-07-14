@@ -6,31 +6,33 @@ plugins {
 
 android {
     namespace = "com.fustermedia.relaxapp"
-    compileSdk = 35 // Recommended: match the SDK installed in Android Studio
+    compileSdk = 35 // Updated to match plugin requirements
 
     ndkVersion = flutter.ndkVersion
 
     defaultConfig {
         applicationId = "com.fustermedia.relaxapp"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        minSdk = 23  // Minimum SDK for google_mobile_ads
+        targetSdk = 35 // Updated target SDK to match compileSdk
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled true
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
 
     buildTypes {
         release {
             signingConfig = signingConfigs.debug
         }
+
     }
 }
 
